@@ -24,6 +24,10 @@ Gem::Specification.new do |s|
   s.add_dependency 'oauth2', '~> 1.0', '>= 0.8.0'
   s.add_dependency 'bcrypt', '~> 3.1'
 
+  s.add_dependency 'redis-rails', '~> 5.0', '>= 5.0.2'
+  s.add_dependency 'useragent', '~> 0.16', '>= 0.16.10'
+  s.add_dependency 'ipaddress', '~> 0.8', '>= 0.8.3'
+
   s.add_development_dependency 'yard', '~> 0.9.0', '>= 0.9.12'
   s.add_development_dependency 'timecop'
   s.add_development_dependency 'simplecov', '>= 0.3.8'
