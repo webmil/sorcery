@@ -4,11 +4,12 @@ module Sorcery
 
       module RedisHistory
 
+        SECONDS_IN_A_YEAR = 3600*24*365
+        HISTORY_MAX_SIZE = 20
+
         module InstanceMethods
 
           def history_push(history_state)
-            SECONDS_IN_A_YEAR = 3600*24*365
-            HISTORY_MAX_SIZE = 20
             Redis.current.lpush(security_history_key, Marshal.dump(history_state))
             Redis.current.ltrim(security_history_key, 0, HISTORY_MAX_SIZE-1)
             Redis.current.expire(security_history_key, SECONDS_IN_A_YEAR)
