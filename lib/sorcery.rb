@@ -21,6 +21,7 @@ module Sorcery
       require 'sorcery/model/submodules/magic_login'
       require 'sorcery/model/submodules/redis_session'
       require 'sorcery/model/submodules/redis_history'
+      require 'sorcery/model/submodules/trusted_network'
     end
   end
 

@@ -39,11 +39,12 @@ module Sorcery
             sorcery_adapter.update_attribute(sorcery_config.session_ids_attribute_name, new_session_ids)
           end
 
-          def sessions
+          def sessions(current_session)
             return if send(sorcery_config.session_ids_attribute_name).blank?
             cleanup_sessions
             send(sorcery_config.session_ids_attribute_name)
-              .map { |id| set_session(id) }
+              .map { |session_id| get_session(session_id, current_session) }
+              .compact
               .sort_by { |h| h["last_action_time"]&.to_i }
               .reverse
           end
@@ -57,23 +58,23 @@ module Sorcery
 
           private
 
-          def set_session(session_id)
+          def get_session(session_id, current_session)
             session_key = session_key(session_id)
 
             return unless Redis.current.exists(session_key)
             redis_session = Marshal.load(Redis.current.get(session_key))
-
+            return if redis_session.nil? || redis_session == {}
             return unless redis_session['user_id'] == self.id.to_s
-            current_session = session_id == session.id
+            is_current_session = session_id == current_session.id
+            last_action_time = Rails.application.config.sorcery.session_timeout_from_last_action ? current_session[:last_action_time] : current_session[:login_time]
 
-            last_action_time = Config.session_timeout_from_last_action ? session[:last_action_time] : session[:login_time]
-
-            redis_session['timeout'] = current_session ?
-              Config.session_timeout_from_last_action :
-              (Config.session_timeout_from_last_action - (Time.now.in_time_zone - last_action_time.to_time))
+            redis_session['timeout'] = is_current_session ?
+              Rails.application.config.sorcery.session_timeout :
+              (Rails.application.config.sorcery.session_timeout - (Time.now.in_time_zone - current_session[:last_action_time].to_time))
 
             redis_session['ttl'] = Redis.current.ttl(session_key)
-            redis_session['current_session'] = current_session
+
+            redis_session['current_session'] = is_current_session
             redis_session['id'] = session_id
             redis_session
           end

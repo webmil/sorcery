@@ -9,8 +9,7 @@ module Sorcery
               attr_accessor :register_useragent_to_session
 
               def merge_redis_session_defaults!
-                @defaults.merge!(:@register_useragent_to_session => true,
-                               )
+                @defaults.merge!(:@register_useragent_to_session => true)
               end
             end
             merge_redis_session_defaults!
@@ -27,7 +26,6 @@ module Sorcery
 
           # Add session_id to user.session_ids array
           def register_session_id_to_user(_user, _credentials)
-            # return unless Config.register_session_id
             _user.cleanup_sessions
             _user.set_session_id(session.id)
           end
@@ -51,8 +49,8 @@ module Sorcery
 
           #
           def revoke_sessions_except_current(_user, _credentials)
-            return unless _user.user_security.delete_all_sessions_except_current
-            _user.sessions.each do |redis_session|
+            return unless _user.revoke_sessions_except_current
+            _user.sessions(session).each do |redis_session|
               _user.revoke_session(redis_session['id']) unless redis_session['current_session']
             end
           end

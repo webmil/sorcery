@@ -22,17 +22,6 @@ module Sorcery
           base.sorcery_config.after_config << :define_redis_history_fields
         end
 
-        module ClassMethods
-
-          protected
-
-          def define_redis_history_fields
-            sorcery_adapter.define_field sorcery_config.history_size_name, Integer, default: 20
-            sorcery_adapter.define_field sorcery_config.history_ttl_name, Integer, default: 3600 * 24 * 365 #year
-          end
-
-        end
-
         module InstanceMethods
 
           def history_push(history_state)
@@ -52,8 +41,19 @@ module Sorcery
 
           private
 
-          def security_history_key(session_id)
+          def security_history_key
             "security_history:#{self.id.to_s}"
+          end
+
+        end
+
+        module ClassMethods
+
+          protected
+
+          def define_redis_history_fields
+            sorcery_adapter.define_field sorcery_config.history_size_name, Integer, default: 20
+            sorcery_adapter.define_field sorcery_config.history_ttl_name, Integer, default: 3600 * 24 * 365 #year
           end
 
         end
