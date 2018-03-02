@@ -29,8 +29,8 @@ module Sorcery
             Redis.current.expire(security_history_key, self.history_ttl)
           end
 
-          def history_get(history_state)
-            security_history = Redis.current.lrange(security_history_key, 0, @count-1)
+          def history(history_len)
+            security_history = Redis.current.lrange(security_history_key, 0, history_len-1)
             security_history.map { |h| Marshal.load(h) }
           end
 
