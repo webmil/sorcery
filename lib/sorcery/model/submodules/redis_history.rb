@@ -7,6 +7,18 @@ module Sorcery
         def self.included(base)
           base.extend(ClassMethods)
           base.send(:include, InstanceMethods)
+
+          base.sorcery_config.class_eval do
+            attr_accessor :history_size_name
+            attr_accessor :history_ttl_name
+          end
+
+          base.sorcery_config.instance_eval do
+            @defaults.merge!(:@history_size_name => :history_size,
+                             :@history_ttl_name => :history_ttl,)
+            reset!
+          end
+
           base.sorcery_config.after_config << :define_redis_history_fields
         end
 
@@ -15,8 +27,8 @@ module Sorcery
           protected
 
           def define_redis_history_fields
-            sorcery_adapter.define_field sorcery_config.history_size, Integer, default: 20
-            sorcery_adapter.define_field sorcery_config.history_ttl, Integer, default: 3600 * 24 * 365 #year
+            sorcery_adapter.define_field sorcery_config.history_size_name, Integer, default: 20
+            sorcery_adapter.define_field sorcery_config.history_ttl_name, Integer, default: 3600 * 24 * 365 #year
           end
 
         end
