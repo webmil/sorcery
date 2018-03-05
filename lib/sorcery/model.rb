@@ -80,8 +80,9 @@ module Sorcery
       # Takes a username and password,
       # Finds the user by the username and compares the user's password to the one supplied to the method.
       # returns the user if success, nil otherwise.
-      def authenticate(*credentials, &block)
+      def authenticate(*credentials, remote_ip, &block)
         raise ArgumentError, 'at least 2 arguments required' if credentials.size < 2
+        @sorcery_config.remote_ip = remote_ip
 
         if credentials[0].blank?
           return authentication_response(return_value: false, failure: :invalid_login, &block)

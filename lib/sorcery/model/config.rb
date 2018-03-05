@@ -38,12 +38,16 @@ module Sorcery
       # Set token randomness
       attr_accessor :token_randomness
 
+      # set remote IP
+      attr_accessor :remote_ip
+
       # change default encryption_provider.
       attr_reader :encryption_provider
       # use an external encryption class.
       attr_reader :custom_encryption_provider
       # encryption algorithm name. See 'encryption_algorithm=' below for available options.
       attr_reader :encryption_algorithm
+
 
       def initialize
         @defaults = {
@@ -64,7 +68,8 @@ module Sorcery
           :@before_authenticate                  => [],
           :@after_config                         => [],
           :@email_delivery_method                => default_email_delivery_method,
-          :@token_randomness                     => 15
+          :@token_randomness                     => 15,
+          :@remote_ip                            => nil
         }
         reset!
       end

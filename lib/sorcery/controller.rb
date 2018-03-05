@@ -30,8 +30,7 @@ module Sorcery
       # Runs hooks after login or failed login.
       def login(*credentials)
         @current_user = nil
-
-        user_class.authenticate(*credentials) do |user, failure_reason|
+        user_class.authenticate(*credentials, request.remote_ip) do |user, failure_reason|
           if failure_reason
             after_failed_login!(credentials)
 

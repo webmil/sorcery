@@ -26,14 +26,14 @@ module Sorcery
           private
 
           def prevent_untrusted_network_login
-            # return false, :untrusted_network unless login_from_trusted_network?
+            return false, :untrusted_network unless login_from_trusted_network?
             true
           end
 
           def login_from_trusted_network?
             begin
-              return true if send(sorcery_config.trusted_network_attribute_name).empty?
-              current_ipa = IPAddress.parse(request.remote_ip)
+              return true if send(sorcery_config.trusted_network_attribute_name).blank?
+              current_ipa = IPAddress.parse(sorcery_config.remote_ip)
               send(sorcery_config.trusted_network_attribute_name).each do |trusted_ipn|
                 trusted_subnet = IPAddress.parse(trusted_ipn)
                 return true if trusted_subnet.include? current_ipa
@@ -46,6 +46,7 @@ module Sorcery
 
           def validate_trusted_network
             send(sorcery_config.trusted_network_attribute_name).each do |address|
+              next if address.blank?
               begin
                 IPAddress.parse(address)
               rescue => error
