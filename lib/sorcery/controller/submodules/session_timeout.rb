@@ -21,11 +21,13 @@ module Sorcery
             merge_session_timeout_defaults!
           end
           Config.after_login << :register_login_time
-          base.prepend_before_action :validate_session
+          base.prepend_before_action :validate_session_timeout
         end
 
         module InstanceMethods
           protected
+
+          attr_accessor_with_default :is_session_timeout, false
 
           # Registers last login to be used as the timeout starting point.
           # Runs as a hook after a successful login.
@@ -35,9 +37,10 @@ module Sorcery
 
           # Checks if session timeout was reached and expires the current session if so.
           # To be used as a before_action, before require_login
-          def validate_session
+          def validate_session_timeout
             if sorcery_session_timeout?
               reset_sorcery_session
+              is_session_timeout = true
               remove_instance_variable :@current_user if defined? @current_user
             else
               session[:last_action_time] = Time.now.in_time_zone
