@@ -27,7 +27,7 @@ module Sorcery
         module InstanceMethods
           protected
 
-          attr_accessor :session_timeouted
+          attr_accessor :session_timedout
 
           # Registers last login to be used as the timeout starting point.
           # Runs as a hook after a successful login.
@@ -40,7 +40,7 @@ module Sorcery
           def validate_session_timeout
             if sorcery_session_timeout?
               reset_sorcery_session
-              @session_timeouted = true
+              @session_timedout = true
               remove_instance_variable :@current_user if defined? @current_user
             else
               session[:last_action_time] = Time.now.in_time_zone
