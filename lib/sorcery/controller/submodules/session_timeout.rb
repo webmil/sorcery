@@ -40,7 +40,7 @@ module Sorcery
           def validate_session_timeout
             if sorcery_session_timeout?
               reset_sorcery_session
-              session_timeouted = true
+              @session_timeouted = true
               remove_instance_variable :@current_user if defined? @current_user
             else
               session[:last_action_time] = Time.now.in_time_zone
