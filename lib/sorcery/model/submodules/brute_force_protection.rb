@@ -18,15 +18,18 @@ module Sorcery
                           :unlock_token_attribute_name,               # Unlock token attribute name
                           :unlock_token_email_method_name,            # Mailer method name
                           :unlock_token_mailer_disabled,              # When true, dont send unlock token via email
-                          :unlock_token_mailer                        # Mailer class
+                          :unlock_token_mailer,                        # Mailer class
+                          :recaptcha_login_retries_amount_limit,
+                          :recaptcha_attribute_name
           end
 
           base.sorcery_config.instance_eval do
             @defaults.merge!(:@failed_logins_count_attribute_name              => :failed_logins_count,
                              :@lock_expires_at_attribute_name                  => :lock_expires_at,
+                             :@recaptcha_login_retries_amount_limit            => 3,
                              :@consecutive_login_retries_amount_limit          => 50,
                              :@login_lock_time_period                          => 60 * 60,
-
+                             :@show_recaptcha_attribute_name                   => :show_recaptcha,
                              :@unlock_token_attribute_name                     => :unlock_token,
                              :@unlock_token_email_method_name                  => :send_unlock_token_email,
                              :@unlock_token_mailer_disabled                    => false,
@@ -56,6 +59,7 @@ module Sorcery
 
           def define_brute_force_protection_fields
             sorcery_adapter.define_field sorcery_config.failed_logins_count_attribute_name, Integer, default: 0
+            sorcery_adapter.define_field sorcery_config.show_recaptcha, Mongoid::Boolean, default: false
             sorcery_adapter.define_field sorcery_config.lock_expires_at_attribute_name, Time
             sorcery_adapter.define_field sorcery_config.unlock_token_attribute_name, String
           end
@@ -70,6 +74,9 @@ module Sorcery
 
             sorcery_adapter.increment(config.failed_logins_count_attribute_name)
 
+            if send(config.failed_logins_count_attribute_name) >= config.recaptcha_login_retries_amount_limit
+              login_enable_recaptcha!
+            end
             if send(config.failed_logins_count_attribute_name) >= config.consecutive_login_retries_amount_limit
               login_lock!
             end
@@ -82,7 +89,8 @@ module Sorcery
             config = sorcery_config
             attributes = { config.lock_expires_at_attribute_name => nil,
                            config.failed_logins_count_attribute_name => 0,
-                           config.unlock_token_attribute_name => nil }
+                           config.unlock_token_attribute_name => nil,
+                           config.show_recaptcha => false }
             sorcery_adapter.update_attributes(attributes)
           end
 
@@ -101,6 +109,14 @@ module Sorcery
             unless config.unlock_token_mailer_disabled || config.unlock_token_mailer.nil?
               send_unlock_token_email!
             end
+          end
+
+          def login_disable_recaptcha!
+            config = sorcery_config
+            attributes = { config.show_recaptcha => true }
+
+            sorcery_adapter.update_attributes(attributes)
+
           end
 
           def login_unlocked?
