@@ -22,6 +22,7 @@ module Sorcery
       require 'sorcery/model/submodules/redis_session'
       require 'sorcery/model/submodules/redis_history'
       require 'sorcery/model/submodules/trusted_network'
+      require 'sorcery/model/submodules/two_factor'
     end
   end
 
@@ -38,6 +39,7 @@ module Sorcery
       require 'sorcery/controller/submodules/external'
       require 'sorcery/controller/submodules/redis_session'
       require 'sorcery/controller/submodules/redis_history'
+      require 'sorcery/controller/submodules/two_factor'
     end
   end
 

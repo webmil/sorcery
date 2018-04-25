@@ -19,6 +19,10 @@ module Sorcery
         attr_accessor :before_logout
         attr_accessor :after_logout
 
+        attr_accessor :after_2fa_anabled
+        attr_accessor :after_2fa_disabled
+        attr_accessor :after_2fa_pass_failed
+
         def init!
           @defaults = {
             :@user_class                           => nil,
@@ -30,7 +34,10 @@ module Sorcery
             :@before_logout                        => [],
             :@after_logout                         => [],
             :@save_return_to_url                   => true,
-            :@cookie_domain                        => nil
+            :@cookie_domain                        => nil,
+            :@after_2fa_anabled                    => [],
+            :@after_2fa_disabled                   => [],
+            :@after_2fa_pass_failed                => [],
           }
         end
 

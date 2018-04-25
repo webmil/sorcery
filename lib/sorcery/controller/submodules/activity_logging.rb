@@ -65,7 +65,7 @@ module Sorcery
           # This runs as a hook just after a successful login.
           def register_last_ip_address(_user, _credentials)
             return unless Config.register_last_ip_address
-            current_user.set_last_ip_address(request.remote_ip)
+            _user.set_last_ip_address(request.remote_ip)
           end
         end
       end

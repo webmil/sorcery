@@ -27,6 +27,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'redis-rails', '~> 5.0', '>= 5.0.2'
   s.add_dependency 'useragent', '~> 0.16', '>= 0.16.10'
   s.add_dependency 'ipaddress', '~> 0.8', '>= 0.8.3'
+  s.add_dependency 'rotp', '~> 3.3', '>= 3.3.0'
+  s.add_dependency 'rqrcode', '~> 0.10', '>= 0.10.1'
 
   s.add_development_dependency 'yard', '~> 0.9.0', '>= 0.9.12'
   s.add_development_dependency 'timecop'
