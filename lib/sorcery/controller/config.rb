@@ -22,6 +22,7 @@ module Sorcery
         attr_accessor :after_2fa_anabled
         attr_accessor :after_2fa_disabled
         attr_accessor :after_2fa_pass_failed
+        attr_accessor :after_2fa_pass_success
 
         def init!
           @defaults = {
@@ -38,6 +39,7 @@ module Sorcery
             :@after_2fa_anabled                    => [],
             :@after_2fa_disabled                   => [],
             :@after_2fa_pass_failed                => [],
+            :@after_2fa_pass_success               => [],
           }
         end
 

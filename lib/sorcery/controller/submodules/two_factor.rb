@@ -41,7 +41,11 @@ module Sorcery
           def totp_valid?(_user, passcode, secret = nil)
             return unless _user
             result = _user.totp_valid?(passcode, secret)
-            after_2fa_pass_failed!(_user) unless result
+            if result
+              after_2fa_pass_success!(_user)
+            else
+              after_2fa_pass_failed!(_user)
+            end
             result
           end
 
@@ -57,6 +61,10 @@ module Sorcery
 
           def after_2fa_pass_failed!(_user)
             Config.after_2fa_pass_failed.each { |c| send(c, _user) }
+          end
+
+          def after_2fa_pass_success!(_user)
+            Config.after_2fa_pass_success.each { |c| send(c, _user) }
           end
 
         end

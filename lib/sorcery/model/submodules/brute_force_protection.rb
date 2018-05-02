@@ -9,6 +9,7 @@ module Sorcery
         def self.included(base)
           base.sorcery_config.class_eval do
             attr_accessor :failed_logins_count_attribute_name,        # failed logins attribute name.
+                          :failed_passcodes_count_attribute_name,
                           :lock_expires_at_attribute_name,            # this field indicates whether user
                           # is banned and when it will be active again.
                           :consecutive_login_retries_amount_limit,    # how many failed logins allowed.
@@ -23,8 +24,9 @@ module Sorcery
 
           base.sorcery_config.instance_eval do
             @defaults.merge!(:@failed_logins_count_attribute_name              => :failed_logins_count,
+                             :@failed_passcodes_count_attribute_name           => :failed_passcodes_count,
                              :@lock_expires_at_attribute_name                  => :lock_expires_at,
-                             :@consecutive_login_retries_amount_limit          => 50,
+                             :@consecutive_login_retries_amount_limit          => 15,
                              :@login_lock_time_period                          => 60 * 60,
 
                              :@unlock_token_attribute_name                     => :unlock_token,
@@ -56,6 +58,7 @@ module Sorcery
 
           def define_brute_force_protection_fields
             sorcery_adapter.define_field sorcery_config.failed_logins_count_attribute_name, Integer, default: 0
+            sorcery_adapter.define_field sorcery_config.failed_passcodes_count_attribute_name, Integer, default: 0
             sorcery_adapter.define_field sorcery_config.lock_expires_at_attribute_name, Time
             sorcery_adapter.define_field sorcery_config.unlock_token_attribute_name, String
           end
@@ -71,6 +74,17 @@ module Sorcery
             sorcery_adapter.increment(config.failed_logins_count_attribute_name)
 
             if send(config.failed_logins_count_attribute_name) >= config.consecutive_login_retries_amount_limit
+              login_lock!
+            end
+          end
+
+          def register_failed_2fa!
+            config = sorcery_config
+            return unless login_unlocked?
+
+            sorcery_adapter.increment(config.failed_passcodes_count_attribute_name)
+
+            if send(config.failed_passcodes_count_attribute_name) >= config.consecutive_login_retries_amount_limit
               login_lock!
             end
           end

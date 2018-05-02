@@ -16,7 +16,7 @@ module Sorcery
           base.sorcery_config.instance_eval do
             @defaults.merge!( :@otp_secret_name     => :otp_secret,
                               :@otp_issuer          => 'issuer_name',
-                              :@otp_drift           => 60
+                              :@otp_drift           => 30
                             )
             reset!
           end

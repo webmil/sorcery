@@ -13,6 +13,8 @@ module Sorcery
 
           Config.after_login << :reset_failed_logins_count!
           Config.after_failed_login << :update_failed_logins_count!
+          Config.after_2fa_pass_success << :reset_failed_passcodes_count!
+          Config.after_2fa_pass_failed << :update_failed_passcodes_count!
         end
 
         module InstanceMethods
@@ -29,6 +31,15 @@ module Sorcery
           # Runs as a hook after a successful login.
           def reset_failed_logins_count!(user, _credentials)
             user.sorcery_adapter.update_attribute(user_class.sorcery_config.failed_logins_count_attribute_name, 0)
+          end
+
+          def update_failed_passcodes_count!(user)
+            user.register_failed_2fa! if user
+            logout if user.login_locked?
+          end
+
+          def reset_failed_passcodes_count!(user)
+            user.sorcery_adapter.update_attribute(user_class.sorcery_config.failed_passcodes_count_attribute_name, 0)
           end
         end
       end
