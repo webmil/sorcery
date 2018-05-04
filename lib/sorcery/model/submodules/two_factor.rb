@@ -70,6 +70,7 @@ module Sorcery
           end
 
           def current_totp
+            secret = send(sorcery_config.otp_secret_name)
             totp(secret).now
           end
 
