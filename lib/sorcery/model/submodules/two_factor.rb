@@ -49,20 +49,19 @@ module Sorcery
           end
 
           def totp_valid?(passcode, secret = nil)
-            secret = send(sorcery_config.otp_secret_name) || secret
-            totp(secret).verify_with_drift(passcode, sorcery_config.otp_drift)
+            totp(user_otp_secret || secret).verify_with_drift(passcode, sorcery_config.otp_drift)
           end
 
           def otp_required?
-            send(sorcery_config.otp_secret_name).present?
+            user_otp_secret.present?
           end
 
           def save_secret!(secret)
-            sorcery_adapter.update_attribute(sorcery_config.otp_secret_name, secret)
+            update_otp_secret(secret)
           end
 
           def clear_secret!
-            sorcery_adapter.update_attribute(sorcery_config.otp_secret_name, nil)
+            update_otp_secret(nil)
           end
 
           def generate_secret
@@ -70,15 +69,20 @@ module Sorcery
           end
 
           def current_totp
-            secret = send(sorcery_config.otp_secret_name)
-            totp(secret).now
+            totp(user_otp_secret).now
           end
 
-          def tfa_enabled?
-            self.otp_secret.present?
-          end
+          alias tfa_enabled? otp_required?
 
           private
+
+          def update_otp_secret(new_secret)
+            sorcery_adapter.update_attribute(sorcery_config.otp_secret_name, new_secret)
+          end
+
+          def user_otp_secret
+            send(sorcery_config.otp_secret_name)
+          end
 
           def provisioning_uri(secret)
             totp(secret).provisioning_uri(self.email)
