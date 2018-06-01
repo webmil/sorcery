@@ -60,11 +60,11 @@ module Sorcery
     # add virtual password accessor and ORM callbacks.
     def init_orm_hooks!
       sorcery_adapter.define_callback :before, :validation, :encrypt_password, if: proc { |record|
-        record.send(sorcery_config.password_attribute_name).present?
+        record.send(sorcery_config.password_attribute_name)
       }
 
       sorcery_adapter.define_callback :after, :save, :clear_virtual_password, if: proc { |record|
-        record.send(sorcery_config.password_attribute_name).present?
+        record.send(sorcery_config.password_attribute_name)
       }
 
       attr_accessor sorcery_config.password_attribute_name
