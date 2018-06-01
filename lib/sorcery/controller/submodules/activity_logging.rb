@@ -58,6 +58,7 @@ module Sorcery
           def register_last_activity_time_to_db
             return unless Config.register_last_activity_time
             return unless logged_in?
+            return unless current_user.persisted?
             current_user.set_last_activity_at(Time.now.in_time_zone)
           end
 
@@ -65,6 +66,7 @@ module Sorcery
           # This runs as a hook just after a successful login.
           def register_last_ip_address(_user, _credentials)
             return unless Config.register_last_ip_address
+
             _user.set_last_ip_address(request.remote_ip)
           end
         end
