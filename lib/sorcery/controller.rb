@@ -131,7 +131,7 @@ module Sorcery
       end
 
       def login_from_session
-        @current_user = if session[:user_id]
+        @current_user = if session[:user_id] && valid_session
                           user_class.sorcery_adapter.find_by_id(session[:user_id])
                         end
       end
@@ -156,6 +156,13 @@ module Sorcery
         @user_class ||= Config.user_class.to_s.constantize
       rescue NameError
         raise ArgumentError, 'You have incorrectly defined user_class or have forgotten to define it in intitializer file (config.user_class = \'User\').'
+      end
+
+      private
+
+      def valid_session
+        user_agent = UserAgent.parse(request.user_agent)
+        session[:browser].present? && session[:ip_address].present? && session[:browser] == user_agent.browser && session[:ip_address] == request.remote_ip
       end
     end
   end
