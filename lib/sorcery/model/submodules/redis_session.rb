@@ -9,11 +9,17 @@ module Sorcery
 
           base.sorcery_config.class_eval do
             attr_accessor :session_ids_attribute_name
+            attr_accessor :session_ttl_attribute_name
+            attr_accessor :remember_me_attribute_name            
             attr_accessor :revoke_sessions_except_current_name
+            attr_accessor :remember_me_for_attribute_name
           end
 
           base.sorcery_config.instance_eval do
             @defaults.merge!(:@session_ids_attribute_name                  => :session_ids,
+                             :@session_ttl_attribute_name                  => :session_ttl,
+                             :@remember_me_for_attribute_name              => :remember_me_for,
+                             :@remember_me_attribute_name                  => :remember_me,
                              :@revoke_sessions_except_current_name         => :revoke_sessions_except_current,
                             )
             reset!
@@ -24,6 +30,10 @@ module Sorcery
 
         module InstanceMethods
 
+          def remember_me!(remember_me)
+            sorcery_adapter.update_attribute(sorcery_config.remember_me_attribute_name, remember_me)
+          end
+
           def cleanup_sessions
             return if send(sorcery_config.session_ids_attribute_name).blank?
             session_ids_to_clean_up = send(sorcery_config.session_ids_attribute_name).map do |session_id|
@@ -31,6 +41,13 @@ module Sorcery
             end
             new_session_ids = send(sorcery_config.session_ids_attribute_name) - session_ids_to_clean_up
             sorcery_adapter.update_attribute(sorcery_config.session_ids_attribute_name, new_session_ids)
+          end
+
+          def set_sessions_ttl(current_session)
+            cleanup_sessions
+            send(sorcery_config.session_ids_attribute_name).each do |session_id|
+              Redis.current.expire(session_key(session_id), send(sorcery_config.session_ttl_attribute_name).days)
+            end
           end
 
           def set_session_id(session_id)
@@ -67,7 +84,7 @@ module Sorcery
             return unless redis_session['user_id'] == self.id.to_s
             is_current_session = session_id == current_session.id
             last_action_time = Rails.application.config.sorcery.session_timeout_from_last_action ? current_session[:last_action_time] : current_session[:login_time]
-
+            
             redis_session['timeout'] = is_current_session ?
               Rails.application.config.sorcery.session_timeout :
               (Rails.application.config.sorcery.session_timeout - (Time.now.in_time_zone - current_session[:last_action_time].to_time))
@@ -90,6 +107,9 @@ module Sorcery
 
           def define_redis_session_fields
             sorcery_adapter.define_field sorcery_config.session_ids_attribute_name, Array
+            sorcery_adapter.define_field sorcery_config.remember_me_for_attribute_name, Integer, default: 7.day            
+            sorcery_adapter.define_field sorcery_config.session_ttl_attribute_name, Integer, default: 1.day
+            sorcery_adapter.define_field sorcery_config.remember_me_attribute_name, Boolean, default: false
             sorcery_adapter.define_field sorcery_config.revoke_sessions_except_current_name, Boolean, default: false
           end
         end
