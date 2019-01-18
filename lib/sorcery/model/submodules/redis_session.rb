@@ -44,9 +44,10 @@ module Sorcery
           end
 
           def set_sessions_ttl(current_session)
+            return if send(sorcery_config.session_ids_attribute_name).blank?
             cleanup_sessions
             send(sorcery_config.session_ids_attribute_name).each do |session_id|
-              Redis.current.expire(session_key(session_id), send(sorcery_config.session_ttl_attribute_name).days)
+              Redis.current.expire(session_key(session_id), send(sorcery_config.session_ttl_attribute_name))
             end
           end
 
@@ -77,7 +78,6 @@ module Sorcery
 
           def get_session(session_id, current_session)
             session_key = session_key(session_id)
-
             return unless Redis.current.exists(session_key)
             redis_session = Marshal.load(Redis.current.get(session_key))
             return if redis_session.nil? || redis_session == {}
