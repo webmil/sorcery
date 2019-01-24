@@ -28,7 +28,6 @@ module Sorcery
           def register_session_id_to_user(_user, _credentials)
             _user.cleanup_sessions
             _user.set_session_id(session.id)
-            _user.set_sessions_ttl(session)
           end
 
           # Updates uearagent data on every login.
